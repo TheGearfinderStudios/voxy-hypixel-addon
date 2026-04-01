@@ -9,10 +9,16 @@ import net.minecraft.client.multiplayer.ServerData;
 import me.cortex.voxy.common.Logger;
 import me.cortex.voxy.client.core.IGetVoxyRenderSystem;
 import java.util.Objects;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 public class HypixelManager implements ClientModInitializer {
     private static boolean isHypixel = false;
     private static String activeSkyblockArea = null;
+    private static final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+    private static ScheduledFuture<?> pendingReload = null;
 
     @Override
     public void onInitializeClient() {
@@ -24,6 +30,7 @@ public class HypixelManager implements ClientModInitializer {
             client.execute(() -> {
                 isHypixel = false;
                 activeSkyblockArea = null;
+                cancelPendingReload();
             });
         });
 
@@ -31,26 +38,53 @@ public class HypixelManager implements ClientModInitializer {
         HypixelPacketEvents.LOCATION_UPDATE.register(packet -> {
             if (packet instanceof LocationUpdateS2CPacket location) {
                 String area = location.mode().orElse(null);
-                String server = location.serverName();
                 
-                // Ensure state transition happens on the Render Thread
                 Minecraft.getInstance().execute(() -> {
-                    String prevArea = activeSkyblockArea;
-                    activeSkyblockArea = area;
+                    if (!isHypixel) return;
                     
-                    if (isHypixel && !Objects.equals(prevArea, activeSkyblockArea)) {
-                        Logger.info("[Voxy-Addon] Hypixel Area Change: " + activeSkyblockArea + " (Server: " + server + ")");
+                    if (!Objects.equals(activeSkyblockArea, area)) {
+                        String oldArea = activeSkyblockArea;
+                        activeSkyblockArea = area;
                         
-                        // Trigger renderer reload on the Render Thread
-                        var lr = Minecraft.getInstance().levelRenderer;
-                        if (lr instanceof IGetVoxyRenderSystem getter) {
-                            getter.shutdownRenderer();
-                            getter.createRenderer();
+                        // Condition 3: Comparison Gating
+                        // Only reload if we are transitioning between two known states, 
+                        // or from Gating (null) to an actual area.
+                        // We skip if oldArea was null and new area is null (no change).
+                        if (area != null || oldArea != null) {
+                            scheduleReload(area);
                         }
                     }
                 });
             }
         });
+    }
+
+    private static void scheduleReload(String area) {
+        cancelPendingReload();
+        
+        // Condition 2: The Debounce (200ms)
+        // This prevents "triple reloads" when Hypixel spams packets during island jumps.
+        pendingReload = scheduler.schedule(() -> {
+            Minecraft.getInstance().execute(() -> {
+                Logger.info("[Voxy-Addon] Rebooting Voxy for area: " + (area == null ? "Limbo/Other" : area));
+                
+                var lr = Minecraft.getInstance().levelRenderer;
+                if (lr instanceof IGetVoxyRenderSystem getter) {
+                    // Condition 1: "Is-Loading" Check / Safety
+                    // Voxy's shutdown/create sequence is heavy; executing it here 
+                    // ensures we are on the Render Thread and after the debounce.
+                    getter.shutdownRenderer();
+                    getter.createRenderer();
+                }
+                pendingReload = null;
+            });
+        }, 200, TimeUnit.MILLISECONDS);
+    }
+
+    private static void cancelPendingReload() {
+        if (pendingReload != null && !pendingReload.isDone()) {
+            pendingReload.cancel(false);
+        }
     }
 
     private static void onJoin(Minecraft client) {
@@ -60,7 +94,7 @@ public class HypixelManager implements ClientModInitializer {
             isHypixel = ip.contains("hypixel.net");
             activeSkyblockArea = null;
             if (isHypixel) {
-                Logger.info("[Voxy-Addon] Hypixel Detected. Gating active until Skyblock area is confirmed.");
+                Logger.info("[Voxy-Addon] Hypixel Detected. Gating active.");
             }
         } else {
             isHypixel = false;
