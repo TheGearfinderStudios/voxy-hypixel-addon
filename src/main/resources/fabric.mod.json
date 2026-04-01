@@ -3,16 +3,16 @@
 	"id": "voxy-hypixel-addon",
 	"version": "${version}",
 	"name": "Voxy Hypixel Addon",
-	"description": "Adds support for Hypixel Skyblock multi-world isolation to Voxy.",
+	"description": "Standalone Voxy addon to achieve per-island world isolation on Hypixel Skyblock.",
 	"authors": [
-		"Brian"
+		"TBlazeWarriorT"
 	],
 	"contact": {
-		"sources": "https://github.com/voxy-hypixel-addon"
+		"sources": "https://github.com/TBlazeWarriorT/voxy-hypixel-addon"
 	},
-	"license": "CC0-1.0",
+	"license": "MIT",
 	"icon": "assets/voxy-hypixel-addon/icon.png",
-	"environment": "*",
+	"environment": "client",
 	"entrypoints": {
 		"client": [
 			"me.cortex.voxy.addon.hypixel.HypixelManager"
@@ -26,6 +26,6 @@
 		"minecraft": "~1.21.1",
 		"java": ">=21",
 		"fabric-api": "*",
-		"voxy": "*"
+		"voxy": ">=0.2.13-alpha"
 	}
 }
