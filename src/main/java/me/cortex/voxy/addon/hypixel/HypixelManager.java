@@ -17,31 +17,38 @@ public class HypixelManager implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
-            onJoin(client);
+            client.execute(() -> onJoin(client));
         });
+
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
-            isHypixel = false;
-            activeSkyblockArea = null;
+            client.execute(() -> {
+                isHypixel = false;
+                activeSkyblockArea = null;
+            });
         });
 
         // HM API listeners
         HypixelPacketEvents.LOCATION_UPDATE.register(packet -> {
             if (packet instanceof LocationUpdateS2CPacket location) {
-                String prevArea = activeSkyblockArea;
-                activeSkyblockArea = location.mode().orElse(null);
+                String area = location.mode().orElse(null);
                 String server = location.serverName();
                 
-                if (isHypixel && !Objects.equals(prevArea, activeSkyblockArea)) {
-                    Logger.info("[Voxy-Addon] Hypixel Area Change: " + activeSkyblockArea + " (Server: " + server + ")");
-                    // Trigger renderer reload
-                    Minecraft.getInstance().execute(() -> {
+                // Ensure state transition happens on the Render Thread
+                Minecraft.getInstance().execute(() -> {
+                    String prevArea = activeSkyblockArea;
+                    activeSkyblockArea = area;
+                    
+                    if (isHypixel && !Objects.equals(prevArea, activeSkyblockArea)) {
+                        Logger.info("[Voxy-Addon] Hypixel Area Change: " + activeSkyblockArea + " (Server: " + server + ")");
+                        
+                        // Trigger renderer reload on the Render Thread
                         var lr = Minecraft.getInstance().levelRenderer;
                         if (lr instanceof IGetVoxyRenderSystem getter) {
                             getter.shutdownRenderer();
                             getter.createRenderer();
                         }
-                    });
-                }
+                    }
+                });
             }
         });
     }
