@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "me.cortex.voxy.addon.hypixel.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "MixinLevelRenderer"
+  ],
+  "mixins": [
+    "MixinWorld",
+    "MixinWorldIdentifier"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
