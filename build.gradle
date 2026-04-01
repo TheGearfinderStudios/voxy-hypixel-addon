@@ -44,6 +44,14 @@ dependencies {
     modCompileOnly name: 'voxy-0.2.13-alpha'
 }
 
+processResources {
+    inputs.property "version", project.version
+
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
+    }
+}
+
 tasks.withType(JavaCompile).configureEach {
     it.options.release = 21
 }
