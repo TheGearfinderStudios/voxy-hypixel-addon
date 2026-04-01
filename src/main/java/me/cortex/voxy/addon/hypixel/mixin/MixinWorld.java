@@ -1,6 +1,7 @@
 package me.cortex.voxy.addon.hypixel.mixin;
 
 import me.cortex.voxy.addon.hypixel.HypixelManager;
+import me.cortex.voxy.addon.hypixel.access.IPerAreaWorldIdentifier;
 import me.cortex.voxy.commonImpl.WorldIdentifier;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
@@ -28,7 +29,7 @@ public abstract class MixinWorld {
                 return null; // Gating: Return null if on hypixel but no area confirmed
             }
             // Add subId to the identifier
-            ((MixinWorldIdentifier)(Object)id).voxy_hypixel_addon$subId = areaId;
+            ((IPerAreaWorldIdentifier)id).setSubId(areaId);
         }
         return id;
     }
