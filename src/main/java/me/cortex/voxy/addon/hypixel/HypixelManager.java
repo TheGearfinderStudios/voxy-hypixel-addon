@@ -42,12 +42,15 @@ public class HypixelManager implements ClientModInitializer {
 
                     String serverType = location.serverType().orElse("");
                     String mode = location.mode().orElse("");
+                    String map = location.map().orElse("");
 
                     String normalized;
 
                     // Use the most specific location data available to isolate storage per game/island
                     if (!mode.isEmpty()) {
                         normalized = mode; // e.g., "hub", "foraging_2", "bedwars_eight_two"
+                    } else if (!map.isEmpty()) {
+                        normalized = serverType + "_" + map; // e.g., "HOUSING_Base", "BEDWARS_Lighthouse"
                     } else if (!serverType.isEmpty()) {
                         normalized = serverType; // e.g., "MAIN", "PROTOTYPE"
                     } else {
@@ -70,8 +73,8 @@ public class HypixelManager implements ClientModInitializer {
         // This prevents "triple reloads" when Hypixel spams packets during island jumps.
         pendingReload = scheduler.schedule(() -> {
             Minecraft.getInstance().execute(() -> {
-                Logger.info(String.format("[Voxy-Addon] Rebooting Voxy after area change. Hypixel: %b / Gamemode: %s / Area: %s", 
-                    isHypixel, gamemode, area));
+                Logger.info(String.format("[Voxy-Addon] Rebooting renderer for new area -> Type: %s | Folder: %s", 
+                    gamemode, area));
                 
                 var lr = Minecraft.getInstance().levelRenderer;
                 if (lr instanceof IGetVoxyRenderSystem getter) {
@@ -99,9 +102,7 @@ public class HypixelManager implements ClientModInitializer {
             isHypixel = ip.contains("hypixel.net");
             // Set to null on join to ensure gating until HM-API provides location
             activeGamemodeArea = null; 
-            if (isHypixel) {
-                Logger.info("[Voxy-Addon] Hypixel Detected. Gating active.");
-            }
+            //if (isHypixel) Logger.info("[Voxy-Addon] Hypixel Detected. Gating active.");
         } else {
             isHypixel = false;
             activeGamemodeArea = null;
