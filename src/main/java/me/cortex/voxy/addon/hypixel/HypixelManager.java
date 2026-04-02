@@ -44,17 +44,18 @@ public class HypixelManager implements ClientModInitializer {
                     String mode = location.mode().orElse("");
                     String map = location.map().orElse("");
 
-                    String normalized;
+                    String normalized = null;
 
-                    // Use the most specific location data available to isolate storage per game/island
-                    if (!mode.isEmpty()) {
-                        normalized = mode; // e.g., "hub", "foraging_2", "bedwars_eight_two"
-                    } else if (!map.isEmpty()) {
-                        normalized = serverType + "_" + map; // e.g., "HOUSING_Base", "BEDWARS_Lighthouse"
-                    } else if (!serverType.isEmpty()) {
-                        normalized = serverType; // e.g., "MAIN", "PROTOTYPE"
-                    } else {
-                        normalized = null; // We have no idea where we are. Gate/block it.
+                    // Only process if we have a valid serverType foundation
+                    if (!serverType.isEmpty()) {
+                        normalized = serverType; // Base (e.g., "SKYBLOCK" or "MAIN")
+                        
+                        // Append the most specific sub-location
+                        if (!mode.isEmpty()) {
+                            normalized += "_" + mode; // -> "SKYBLOCK_foraging_2"
+                        } else if (!map.isEmpty()) {
+                            normalized += "_" + map;  // -> "HOUSING_Base"
+                        }
                     }
 
                     if (!Objects.equals(activeGamemodeArea, normalized)) {
