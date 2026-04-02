@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 public class HypixelManager implements ClientModInitializer {
     private static boolean isHypixel = false;
-    private static String activeSkyblockArea = null;
+    private static String activeGamemodeArea = null;
     private static final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private static ScheduledFuture<?> pendingReload = null;
 
@@ -29,7 +29,7 @@ public class HypixelManager implements ClientModInitializer {
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
             client.execute(() -> {
                 isHypixel = false;
-                activeSkyblockArea = null;
+                activeGamemodeArea = null;
                 cancelPendingReload();
             });
         });
@@ -37,36 +37,41 @@ public class HypixelManager implements ClientModInitializer {
         // HM API listeners
         HypixelPacketEvents.LOCATION_UPDATE.register(packet -> {
             if (packet instanceof LocationUpdateS2CPacket location) {
-                String area = location.mode().orElse(null);
-                
                 Minecraft.getInstance().execute(() -> {
                     if (!isHypixel) return;
-                    
-                    if (!Objects.equals(activeSkyblockArea, area)) {
-                        String oldArea = activeSkyblockArea;
-                        activeSkyblockArea = area;
-                        
-                        // Condition 3: Comparison Gating
-                        // Only reload if we are transitioning between two known states, 
-                        // or from Gating (null) to an actual area.
-                        // We skip if oldArea was null and new area is null (no change).
-                        if (area != null || oldArea != null) {
-                            scheduleReload(area);
-                        }
+
+                    String serverType = location.serverType().orElse("");
+                    String mode = location.mode().orElse("");
+
+                    String normalized;
+
+                    // Use the most specific location data available to isolate storage per game/island
+                    if (!mode.isEmpty()) {
+                        normalized = mode; // e.g., "hub", "foraging_2", "bedwars_eight_two"
+                    } else if (!serverType.isEmpty()) {
+                        normalized = serverType; // e.g., "MAIN", "PROTOTYPE"
+                    } else {
+                        normalized = null; // We have no idea where we are. Gate/block it.
+                    }
+
+                    if (!Objects.equals(activeGamemodeArea, normalized)) {
+                        activeGamemodeArea = normalized;
+                        scheduleReload(serverType, normalized);
                     }
                 });
             }
         });
     }
 
-    private static void scheduleReload(String area) {
+    private static void scheduleReload(String gamemode, String area) {
         cancelPendingReload();
         
         // Condition 2: The Debounce (200ms)
         // This prevents "triple reloads" when Hypixel spams packets during island jumps.
         pendingReload = scheduler.schedule(() -> {
             Minecraft.getInstance().execute(() -> {
-                Logger.info("[Voxy-Addon] Rebooting Voxy for area: " + (area == null ? "Limbo/Other" : area));
+                Logger.info(String.format("[Voxy-Addon] Rebooting Voxy after area change. Hypixel: %b / Gamemode: %s / Area: %s", 
+                    isHypixel, gamemode, area));
                 
                 var lr = Minecraft.getInstance().levelRenderer;
                 if (lr instanceof IGetVoxyRenderSystem getter) {
@@ -92,13 +97,14 @@ public class HypixelManager implements ClientModInitializer {
         if (serverData != null && serverData.ip != null) {
             String ip = serverData.ip.toLowerCase();
             isHypixel = ip.contains("hypixel.net");
-            activeSkyblockArea = null;
+            // Set to null on join to ensure gating until HM-API provides location
+            activeGamemodeArea = null; 
             if (isHypixel) {
                 Logger.info("[Voxy-Addon] Hypixel Detected. Gating active.");
             }
         } else {
             isHypixel = false;
-            activeSkyblockArea = null;
+            activeGamemodeArea = null;
         }
     }
 
@@ -107,6 +113,6 @@ public class HypixelManager implements ClientModInitializer {
     }
 
     public static String getAreaId() {
-        return activeSkyblockArea;
+        return activeGamemodeArea;
     }
 }
