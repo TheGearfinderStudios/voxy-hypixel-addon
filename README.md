@@ -5,7 +5,7 @@ A standalone Fabric addon for **[Voxy](https://modrinth.com/mod/voxy)** designed
 Created by **TBlazeWarriorT**.
 
 ## ⚠️ Alpha Notice
-This mod is an addon for Voxy, which is currently in its early **Alpha** development stage. Both Voxy and this addon are highly experimental. Use at your own risk.
+This mod is an addon for Voxy, which is currently in its early **Alpha** development stage. Both Voxy and this addon are highly experimental. Use at your own risk. (Ban risk is minimal, rendering issues are very possible)
 
 ## What does this do?
 Voxy is a world-streaming mod that stores chunk data locally. On Hypixel Skyblock, players frequently switch between different islands (Hub, Private Island, Dwarven Mines, etc.) while technically staying on the same "server world." 
