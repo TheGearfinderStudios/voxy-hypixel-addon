@@ -2,7 +2,7 @@
 
 A standalone Fabric addon for **[Voxy](https://modrinth.com/mod/voxy)** designed to fix chunk data leakage between same-type Hypixel dimensions across gamemodes.
 
-Created by **TBlazeWarriorT**.
+Created by **[TBlazeWarriorT](https://linktr.ee/tblazewarriort)**.
 
 ## ⚠️ Alpha Notice
 This mod is an addon for Voxy, which is currently in its early **Alpha** development stage. Both Voxy and this addon are experimental. Use at your own risk. (Ban risk is minimal, rendering issues are very possible)
