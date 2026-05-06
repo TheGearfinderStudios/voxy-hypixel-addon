@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(New-Item -ItemType Directory \"C:\\\\githubrepositories\\\\voxy-hypixel-addon\\\\libs\")",
+      "PowerShell(Copy-Item \"C:\\\\githubrepositories\\\\voxy\\\\build\\\\libs\\\\voxy-0.2.15-beta-76169a0.jar\" \"C:\\\\githubrepositories\\\\voxy-hypixel-addon\\\\libs\\\\\")",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\githubrepositories\\\\voxy-hypixel-addon\" -Recurse -Exclude \".gradle\",\"build\",\".git\" -Force | Select-Object -ExpandProperty FullName | ForEach-Object { $_ -replace [regex]::Escape\\(\"C:\\\\githubrepositories\\\\voxy-hypixel-addon\\\\\"\\), \"\" } | Sort-Object)",
+      "Bash(gh repo *)",
+      "PowerShell(gh repo fork TheGearfinderStudios/voxy-hypixel-addon --clone=false)"
+    ]
+  }
+}
