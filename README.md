@@ -4,8 +4,8 @@ A standalone Fabric addon for **[Voxy](https://modrinth.com/mod/voxy)** designed
 
 Created by **[TBlazeWarriorT](https://linktr.ee/tblazewarriort)**.
 
-## ⚠️ Alpha Notice
-This mod is an addon for Voxy, which is currently in its early **Alpha** development stage. Both Voxy and this addon are experimental. Use at your own risk. (Ban risk is minimal, rendering issues are very possible)
+## ⚠️ Beta Notice
+This mod is an addon for Voxy, which is currently in **Beta** development stage. Voxy updates may temporarily break this mod, and please report any major issues found.
 
 ## What does this do?
 Voxy is a world-streaming mod that stores chunk data locally. On Hypixel, players frequently switch between different islands (Hub, Private Island, Dwarven Mines, etc.) while technically staying on the same "server world."
@@ -20,7 +20,7 @@ Without this addon, Voxy treats all lobbies/islands in a server as one single wo
 
 ## Requirements
 - **Fabric Loader**
-- **Voxy** (Alpha)
+- **Voxy** (Beta)
 - **Fabric API**
 
 *Note: The [HM-API](https://github.com/AzureAaron/HM-API) is bundled within the mod, so you do NOT need to download it separately.*
