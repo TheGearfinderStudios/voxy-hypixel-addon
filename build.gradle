@@ -44,7 +44,7 @@ dependencies {
     include modImplementation("net.azureaaron:hm-api:${project.hm_api_version}")
 
     // Voxy - Local for compilation
-    modCompileOnly name: 'voxy-0.2.13-alpha'
+    compileOnly name: 'voxy-0.2.15-beta-76169a0'
 }
 
 processResources {

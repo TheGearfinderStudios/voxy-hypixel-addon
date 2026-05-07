@@ -82,8 +82,8 @@ public class HypixelManager implements ClientModInitializer {
                     // Condition 1: "Is-Loading" Check / Safety
                     // Voxy's shutdown/create sequence is heavy; executing it here 
                     // ensures we are on the Render Thread and after the debounce.
-                    getter.shutdownRenderer();
-                    getter.createRenderer();
+                    getter.voxy$shutdownRenderer();
+                    getter.voxy$createRenderer();
                 }
                 pendingReload = null;
             });

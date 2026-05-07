@@ -32,6 +32,9 @@ bin/
 
 run/
 
+# local deps
+libs/
+
 # java
 
 hs_err_*.log
