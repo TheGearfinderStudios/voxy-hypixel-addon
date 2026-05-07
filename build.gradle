@@ -44,7 +44,7 @@ dependencies {
     include modImplementation("net.azureaaron:hm-api:${project.hm_api_version}")
 
     // Voxy - Local for compilation
-    compileOnly name: 'voxy-0.2.15-beta-76169a0'
+    modCompileOnly files("libs/voxy-0.2.15-beta+1.21.11.jar")
 }
 
 processResources {
