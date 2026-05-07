@@ -31,6 +31,22 @@ repositories {
     flatDir { dir 'libs' }
 }
 
+// --- VOXY DEPENDENCY RESOLVER ---
+// Agents/Contributors: Update this when bumping Voxy version.
+// Finds the latest matching jar in /libs (e.g. voxy-0.2.15-beta+1.21.11.jar)
+def TARGET_VOXY_VERSION = "0.2.15"
+//
+
+def voxyJars = fileTree(dir: 'libs', include: "voxy-${TARGET_VOXY_VERSION}*.jar").files.sort()
+if (voxyJars.isEmpty()) {
+    throw new GradleException("VOXY ERROR: No voxy-${TARGET_VOXY_VERSION}*.jar found in /libs. Please add the JAR to the libs folder.")
+}
+if (voxyJars.size() > 1) {
+    logger.warn("VOXY WARNING: Multiple voxy jars found. Using: ${voxyJars.last().name}")
+}
+def voxyJarFile = voxyJars.last()
+// --------------------------------
+
 dependencies {
     // To change the versions see the gradle.properties file
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -44,7 +60,7 @@ dependencies {
     include modImplementation("net.azureaaron:hm-api:${project.hm_api_version}")
 
     // Voxy - Local for compilation
-    modCompileOnly files("libs/voxy-0.2.15-beta+1.21.11.jar")
+    modCompileOnly files(voxyJarFile)
 }
 
 processResources {
