@@ -22,6 +22,11 @@ public class HypixelManager implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        // Register for Hypixel API location updates
+        it.unimi.dsi.fastutil.objects.Object2IntMap<net.minecraft.network.protocol.common.custom.CustomPacketPayload.Type<net.azureaaron.hmapi.network.packet.s2c.HypixelS2CPacket>> events = new it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap<>();
+        events.put(LocationUpdateS2CPacket.ID, 1);
+        net.azureaaron.hmapi.network.HypixelNetworking.registerToEvents(events);
+
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
             client.execute(() -> onJoin(client));
         });
