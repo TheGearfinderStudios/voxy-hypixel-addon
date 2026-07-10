@@ -8,6 +8,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
 import me.cortex.voxy.common.Logger;
 import me.cortex.voxy.client.core.IGetVoxyRenderSystem;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.minecraft.network.chat.Component;
 import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -22,6 +25,27 @@ public class HypixelManager implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        AddonConfig.load();
+
+        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
+            dispatcher.register(ClientCommandManager.literal("voxyaddon")
+                .then(ClientCommandManager.literal("fastreloads")
+                    .then(ClientCommandManager.argument("enabled", com.mojang.brigadier.arguments.BoolArgumentType.bool())
+                        .executes(context -> {
+                            boolean enabled = com.mojang.brigadier.arguments.BoolArgumentType.getBool(context, "enabled");
+                            AddonConfig.setFastReloads(enabled);
+                            context.getSource().sendFeedback(Component.literal("Voxy fast reloads set to: " + enabled));
+                            return 1;
+                        })
+                    )
+                    .executes(context -> {
+                        context.getSource().sendFeedback(Component.literal("Voxy fast reloads is currently: " + AddonConfig.isFastReloads()));
+                        return 1;
+                    })
+                )
+            );
+        });
+
         // Register for Hypixel API location updates
         it.unimi.dsi.fastutil.objects.Object2IntMap<net.minecraft.network.protocol.common.custom.CustomPacketPayload.Type<net.azureaaron.hmapi.network.packet.s2c.HypixelS2CPacket>> events = new it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap<>();
         events.put(LocationUpdateS2CPacket.ID, 1);
