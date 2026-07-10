@@ -20,12 +20,6 @@ repositories {
         }
         filter { includeGroup "maven.modrinth" }
     }
-    exclusiveContent {
-        forRepository {
-            maven { url "https://maven.azureaaron.net/releases" }
-        }
-        filter { includeGroup "net.azureaaron" }
-    }
     maven { url = "https://maven.shedaniel.me/" }
     maven { url = "https://maven.terraformersmc.com/releases/" }
     flatDir { dir 'libs' }
@@ -55,9 +49,6 @@ dependencies {
 
     // Fabric API
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-
-    // HM-API
-    include modImplementation("net.azureaaron:hm-api:${project.hm_api_version}")
 
     // Voxy - Local for compilation
     modCompileOnly files(voxyJarFile)
