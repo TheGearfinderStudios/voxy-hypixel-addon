@@ -13,20 +13,14 @@ public class MixinPipelineManager {
     @Inject(method = "destroyPipeline", at = @At("HEAD"), cancellable = true)
     private void onDestroyPipeline(CallbackInfo ci) {
         if (HypixelManager.isHypixel() && AddonConfig.isSkipFakeReloads()) {
-            try {
-                Class<?> irisClass = Class.forName("net.irisshaders.iris.Iris");
-                java.lang.reflect.Method getCurrentDimensionMethod = irisClass.getMethod("getCurrentDimension");
-                java.lang.reflect.Field lastDimensionField = irisClass.getField("lastDimension");
-
-                Object current = getCurrentDimensionMethod.invoke(null);
-                Object last = lastDimensionField.get(null);
-
-                if (current != null && last != null && !current.equals(last)) {
-                    // Bypass destroying the pipeline during dimension change on Hypixel!
+            // Only cancel the destruction if it was triggered by Minecraft's level/dimension transition
+            for (StackTraceElement element : Thread.currentThread().getStackTrace()) {
+                String className = element.getClassName();
+                String methodName = element.getMethodName();
+                if (className.contains("MixinMinecraft_PipelineManagement") || methodName.contains("updateLevelInEngines")) {
                     ci.cancel();
+                    return;
                 }
-            } catch (Throwable t) {
-                t.printStackTrace();
             }
         }
     }
