@@ -12,6 +12,7 @@ public class AddonConfig {
 
     public static class ConfigData {
         public boolean fastReloads = true;
+        public boolean skipFakeReloads = true;
     }
 
     private static ConfigData data = new ConfigData();
@@ -50,6 +51,15 @@ public class AddonConfig {
 
     public static void setFastReloads(boolean value) {
         data.fastReloads = value;
+        save();
+    }
+
+    public static boolean isSkipFakeReloads() {
+        return data.skipFakeReloads;
+    }
+
+    public static void setSkipFakeReloads(boolean value) {
+        data.skipFakeReloads = value;
         save();
     }
 }

@@ -20,6 +20,7 @@ public class HypixelManager implements ClientModInitializer {
     private static String activeGamemodeArea = null;
     private static final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private static ScheduledFuture<?> pendingReload = null;
+    public static boolean isDimensionChanging = false;
 
     @Override
     public void onInitializeClient() {

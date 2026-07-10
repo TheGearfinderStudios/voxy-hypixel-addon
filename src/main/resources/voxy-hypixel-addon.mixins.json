@@ -9,7 +9,9 @@
     "MixinWorldIdentifier",
     "MixinLogger",
     "MixinVoxyRenderSystem",
-    "MixinVoxyConfigMenu"
+    "MixinVoxyConfigMenu",
+    "MixinPipelineManager",
+    "MixinMinecraft"
   ],
   "injectors": {
     "defaultRequire": 1
