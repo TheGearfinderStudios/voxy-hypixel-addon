@@ -26,6 +26,6 @@
 		"minecraft": ">=26.1",
 		"java": ">=25",
 		"fabric-api": "*",
-		"voxy": ">=0.2.16-beta"
+		"voxy": ">=0.2.17-beta"
 	}
 }

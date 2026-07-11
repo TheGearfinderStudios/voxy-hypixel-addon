@@ -34,7 +34,7 @@ repositories {
 // --- VOXY DEPENDENCY RESOLVER ---
 // Agents/Contributors: Update this when bumping Voxy version.
 // Finds the latest matching jar in /libs (e.g. voxy-0.2.15-beta+1.21.11.jar)
-def TARGET_VOXY_VERSION = "0.2.16"
+def TARGET_VOXY_VERSION = "0.2.17"
 //
 
 def voxyJars = fileTree(dir: 'libs', include: "voxy-${TARGET_VOXY_VERSION}*.jar").files.sort()

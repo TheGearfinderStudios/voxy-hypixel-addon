@@ -7,7 +7,7 @@ import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
 import me.cortex.voxy.common.Logger;
-import me.cortex.voxy.client.core.IGetVoxyRenderSystem;
+import me.cortex.voxy.client.core.IVoxyRenderSystemHolder;
 import net.minecraft.network.chat.Component;
 import java.util.Objects;
 import java.util.concurrent.Executors;
@@ -156,7 +156,7 @@ public class HypixelManager implements ClientModInitializer {
                 
                 long startTime = System.currentTimeMillis();
                 var lr = Minecraft.getInstance().levelRenderer;
-                if (lr instanceof IGetVoxyRenderSystem getter) {
+                if (lr instanceof IVoxyRenderSystemHolder getter) {
                     // Condition 1: "Is-Loading" Check / Safety
                     // Voxy's shutdown/create sequence is heavy; executing it here 
                     // ensures we are on the Render Thread and after the debounce.
