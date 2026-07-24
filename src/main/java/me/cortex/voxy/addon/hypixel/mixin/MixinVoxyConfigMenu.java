@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 
 import java.lang.reflect.Field;
 
-@Mixin(value = VoxyConfigMenu.class, remap = false)
+@Mixin(targets = "me.cortex.voxy.client.config.VoxyConfigMenu", remap = false)
 public class MixinVoxyConfigMenu {
 
     @ModifyArg(

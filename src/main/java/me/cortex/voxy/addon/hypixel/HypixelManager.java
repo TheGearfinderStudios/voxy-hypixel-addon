@@ -163,6 +163,7 @@ public class HypixelManager implements ClientModInitializer {
                     getter.voxy$shutdownRenderer();
                     long shutdownTime = System.currentTimeMillis();
                     
+                    getter.voxy$setWorld(Minecraft.getInstance().level);
                     getter.voxy$createRenderer();
                     long createTime = System.currentTimeMillis();
                     

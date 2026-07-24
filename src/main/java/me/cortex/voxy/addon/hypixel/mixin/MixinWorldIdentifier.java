@@ -17,7 +17,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-@Mixin(value = WorldIdentifier.class, remap = false)
+@Mixin(targets = "me.cortex.voxy.commonImpl.WorldIdentifier", remap = false)
 public abstract class MixinWorldIdentifier implements IPerAreaWorldIdentifier {
     @Shadow public long biomeSeed;
     @Shadow public ResourceKey<Level> key;
