@@ -6,7 +6,12 @@ plugins {
 // Run full project build when Gradle is invoked without explicit tasks
 defaultTasks 'build'
 
-version = project.mod_version
+// --- VOXY DEPENDENCY RESOLVER & VERSION CONFIG ---
+// Agents/Contributors: Update TARGET_VOXY_VERSION when bumping Voxy dependency version.
+def TARGET_VOXY_VERSION = "0.2.18"
+def voxyVersionSuffix = TARGET_VOXY_VERSION.substring(TARGET_VOXY_VERSION.lastIndexOf('.') + 1)
+
+version = "${project.mod_version}+mc${project.minecraft_version}-voxy${voxyVersionSuffix}"
 group = project.maven_group
 
 base {
@@ -30,12 +35,6 @@ repositories {
     maven { url = "https://maven.terraformersmc.com/releases/" }
     flatDir { dir 'libs' }
 }
-
-// --- VOXY DEPENDENCY RESOLVER ---
-// Agents/Contributors: Update this when bumping Voxy version.
-// Finds the latest matching jar in /libs (e.g. voxy-0.2.15-beta+1.21.11.jar)
-def TARGET_VOXY_VERSION = "0.2.18"
-//
 
 def voxyJars = fileTree(dir: 'libs', include: "voxy-${TARGET_VOXY_VERSION}*.jar").files.sort()
 if (voxyJars.isEmpty()) {
