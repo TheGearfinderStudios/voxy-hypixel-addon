@@ -90,6 +90,5 @@ goto omega
 if "%OS%"=="Windows_NT" endlocal
 
 :omega
-echo.
-echo Press enter to close...
-pause >nul
+timeout /t 15 >nul 2>&1
+exit /b 0
