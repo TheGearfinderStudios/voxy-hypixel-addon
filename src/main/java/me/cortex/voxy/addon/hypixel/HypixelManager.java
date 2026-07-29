@@ -202,4 +202,14 @@ public class HypixelManager implements ClientModInitializer {
     public static String getAreaId() {
         return activeGamemodeArea;
     }
+
+    public static void beginLevelTransition() {
+        if (!isHypixel) return;
+
+        //A new ClientLevel arrives before HM API's location packet. Leaving the
+        //previous area active makes Voxy build an expensive renderer for the old
+        //island, only for scheduleReload() to destroy it moments later.
+        activeGamemodeArea = null;
+        cancelPendingReload();
+    }
 }
