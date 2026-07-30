@@ -8,6 +8,7 @@
     "MixinWorld",
     "MixinWorldIdentifier",
     "MixinLogger",
+    "MixinVoxyClientInstance",
     "MixinVoxyRenderSystem",
     "MixinVoxyConfigMenu",
     "MixinPipelineManager"
