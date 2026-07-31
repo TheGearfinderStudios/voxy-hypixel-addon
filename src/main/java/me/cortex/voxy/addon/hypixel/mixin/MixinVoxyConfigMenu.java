@@ -78,16 +78,32 @@ public class MixinVoxyConfigMenu {
                 mergeAlphaOption = setTooltipSupplierMethod.invoke(mergeAlphaOption, mergeAlphaTooltip);
                 mergeAlphaOption = setEnablerMethod.invoke(mergeAlphaOption, "voxy:enabled");
 
+                // Option 4: Enable Area Merging
+                java.util.function.Supplier<Boolean> enableMergingGetter = () -> AddonConfig.isEnableAreaMerging();
+                java.util.function.Consumer<Boolean> enableMergingSetter = v -> AddonConfig.setEnableAreaMerging(v);
+                Object enableMergingOption = boolOptCons.newInstance(
+                    "voxyaddon:enable_area_merging",
+                    Component.literal("Addon: Enable Area Merging"),
+                    enableMergingGetter,
+                    enableMergingSetter
+                );
+                java.util.function.Function<Object, Component> enableMergingTooltip = op -> Component.literal(
+                    "Enables merging identical Hypixel Skyblock maps (e.g. Park, Spider's Den) into a single shared cache folder to save disk space and speed up warps."
+                );
+                enableMergingOption = setTooltipSupplierMethod.invoke(enableMergingOption, enableMergingTooltip);
+                enableMergingOption = setEnablerMethod.invoke(enableMergingOption, "voxy:enabled");
+
                 Class<?> groupClass = Class.forName("me.cortex.voxy.client.config.SodiumConfigBuilder$Group");
                 Class<?> optionClass = Class.forName("me.cortex.voxy.client.config.SodiumConfigBuilder$Option");
                 java.lang.reflect.Constructor<?> groupCons = groupClass.getConstructor(
                     java.lang.reflect.Array.newInstance(optionClass, 0).getClass()
                 );
 
-                Object optionsArray = java.lang.reflect.Array.newInstance(optionClass, 3);
+                Object optionsArray = java.lang.reflect.Array.newInstance(optionClass, 4);
                 java.lang.reflect.Array.set(optionsArray, 0, fastReloadsOption);
                 java.lang.reflect.Array.set(optionsArray, 1, skipFakeReloadsOption);
                 java.lang.reflect.Array.set(optionsArray, 2, mergeAlphaOption);
+                java.lang.reflect.Array.set(optionsArray, 3, enableMergingOption);
 
                 SodiumConfigBuilder.Group addonGroup = (SodiumConfigBuilder.Group) groupCons.newInstance(optionsArray);
 

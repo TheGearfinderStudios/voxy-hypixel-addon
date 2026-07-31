@@ -51,12 +51,12 @@ public class AddonConfig {
     }
 
     public static class ConfigData {
-        public boolean fastReloads = true;
-        public boolean skipFakeReloads = true;
+        public Boolean fastReloads = true;
+        public Boolean skipFakeReloads = true;
         // If enabled: Hypixel Alpha uses the same Voxy cache as the main server (saves disk space).
         // If disabled: Hypixel Alpha gets a dedicated cache folder (prevents cache bleed if Alpha has unreleased terrain changes).
-        public boolean mergeAlphaHypixel = true;
-        public boolean enableAreaMerging = true;
+        public Boolean mergeAlphaHypixel = true;
+        public Boolean enableAreaMerging = true;
         public java.util.Map<String, AreaMapping> areaMappings = new java.util.HashMap<>();
 
         public ConfigData() {
@@ -69,7 +69,12 @@ public class AddonConfig {
             areaMappings.put("SKYBLOCK_foraging_2", new AreaMapping("SKYBLOCK_hub", galateaBoxes)); // galatea
             
             areaMappings.put("SKYBLOCK_combat_1", new AreaMapping("SKYBLOCK_hub")); // spider
-            areaMappings.put("SKYBLOCK_combat_3", new AreaMapping("SKYBLOCK_hub")); // end
+            
+            // End Hub clone lacks other parts of the hub, restrict cache writes to the End island boundaries
+            java.util.List<BoundingBox> endBoxes = new java.util.ArrayList<>();
+            endBoxes.add(new BoundingBox(-800, -420, -440, -120));
+            areaMappings.put("SKYBLOCK_combat_3", new AreaMapping("SKYBLOCK_hub", endBoxes)); // end
+            
             areaMappings.put("SKYBLOCK_crimson_isle", new AreaMapping("SKYBLOCK_hub", "OVERWORLD")); // crimson
             areaMappings.put("SKYBLOCK_mining_1", new AreaMapping("SKYBLOCK_hub")); // gold mine
             areaMappings.put("SKYBLOCK_farming_1", new AreaMapping("SKYBLOCK_hub")); // barn
@@ -82,21 +87,21 @@ public class AddonConfig {
 
     public static String getCanonicalAreaId(String areaId) {
         if (areaId == null) return null;
-        if (!data.enableAreaMerging) return areaId;
+        if (data.enableAreaMerging == null || !data.enableAreaMerging) return areaId;
         AreaMapping mapped = data.areaMappings.get(areaId);
         return (mapped != null && mapped.targetArea != null && !mapped.targetArea.isEmpty()) ? mapped.targetArea : areaId;
     }
 
     public static String getTargetDimension(String areaId) {
         if (areaId == null) return null;
-        if (!data.enableAreaMerging) return null;
+        if (data.enableAreaMerging == null || !data.enableAreaMerging) return null;
         AreaMapping mapped = data.areaMappings.get(areaId);
         return mapped != null ? mapped.targetDimension : null;
     }
 
     public static boolean isIngestAllowed(String areaId, int blockX, int blockZ) {
         if (areaId == null) return true;
-        if (!data.enableAreaMerging) return true;
+        if (data.enableAreaMerging == null || !data.enableAreaMerging) return true;
         AreaMapping mapped = data.areaMappings.get(areaId);
         if (mapped == null || mapped.allowedBoxes == null || mapped.allowedBoxes.isEmpty()) {
             return true;
@@ -115,10 +120,10 @@ public class AddonConfig {
                 try (var reader = Files.newBufferedReader(CONFIG_PATH)) {
                     ConfigData loaded = GSON.fromJson(reader, ConfigData.class);
                     if (loaded != null) {
-                        data.fastReloads = loaded.fastReloads;
-                        data.skipFakeReloads = loaded.skipFakeReloads;
-                        data.mergeAlphaHypixel = loaded.mergeAlphaHypixel;
-                        data.enableAreaMerging = loaded.enableAreaMerging;
+                        if (loaded.fastReloads != null) data.fastReloads = loaded.fastReloads;
+                        if (loaded.skipFakeReloads != null) data.skipFakeReloads = loaded.skipFakeReloads;
+                        if (loaded.mergeAlphaHypixel != null) data.mergeAlphaHypixel = loaded.mergeAlphaHypixel;
+                        if (loaded.enableAreaMerging != null) data.enableAreaMerging = loaded.enableAreaMerging;
                         if (loaded.areaMappings != null) {
                             data.areaMappings.putAll(loaded.areaMappings);
                         }
