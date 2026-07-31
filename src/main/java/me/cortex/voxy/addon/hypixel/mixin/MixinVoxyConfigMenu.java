@@ -88,7 +88,7 @@ public class MixinVoxyConfigMenu {
                     enableMergingSetter
                 );
                 java.util.function.Function<Object, Component> enableMergingTooltip = op -> Component.literal(
-                    "Enables merging identical Hypixel Skyblock maps (e.g. Park, Spider's Den) into a single shared cache folder to save disk space and speed up warps."
+                    "Merges identical Hypixel Skyblock islands (e.g. Park, Spider's Den) into a single shared cache to save disk space and retain loaded chunks between areas without re-exploration. (Will only take effect after reconnecting!)"
                 );
                 enableMergingOption = setTooltipSupplierMethod.invoke(enableMergingOption, enableMergingTooltip);
                 enableMergingOption = setEnablerMethod.invoke(enableMergingOption, "voxy:enabled");

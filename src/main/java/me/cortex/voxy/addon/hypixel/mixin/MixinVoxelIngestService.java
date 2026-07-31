@@ -13,9 +13,11 @@ public class MixinVoxelIngestService {
     @Inject(method = "shouldIngestSection", at = @At("HEAD"), cancellable = true)
     private static void voxy_hypixel_addon$shouldIngest(LevelChunkSection section, int cx, int cy, int cz, CallbackInfoReturnable<Boolean> cir) {
         if (HypixelManager.isHypixel()) {
-            int blockX = cx << 4;
-            int blockZ = cz << 4;
-            if (!AddonConfig.isIngestAllowed(HypixelManager.getRawAreaId(), blockX, blockZ)) {
+            int minX = cx << 4;
+            int minZ = cz << 4;
+            int maxX = minX + 15;
+            int maxZ = minZ + 15;
+            if (!AddonConfig.isIngestAllowed(HypixelManager.getRawAreaId(), minX, minZ, maxX, maxZ)) {
                 cir.setReturnValue(false);
             }
         }

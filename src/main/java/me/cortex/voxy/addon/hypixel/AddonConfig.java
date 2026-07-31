@@ -27,6 +27,11 @@ public class AddonConfig {
         public boolean contains(int x, int z) {
             return x >= minX && x <= maxX && z >= minZ && z <= maxZ;
         }
+
+        public boolean intersects(int chunkMinX, int chunkMinZ, int chunkMaxX, int chunkMaxZ) {
+            return chunkMinX <= maxX && chunkMaxX >= minX &&
+                   chunkMinZ <= maxZ && chunkMaxZ >= minZ;
+        }
     }
 
     public static class AreaMapping {
@@ -99,7 +104,7 @@ public class AddonConfig {
         return mapped != null ? mapped.targetDimension : null;
     }
 
-    public static boolean isIngestAllowed(String areaId, int blockX, int blockZ) {
+    public static boolean isIngestAllowed(String areaId, int chunkMinX, int chunkMinZ, int chunkMaxX, int chunkMaxZ) {
         if (areaId == null) return true;
         if (data.enableAreaMerging == null || !data.enableAreaMerging) return true;
         AreaMapping mapped = data.areaMappings.get(areaId);
@@ -107,7 +112,7 @@ public class AddonConfig {
             return true;
         }
         for (BoundingBox box : mapped.allowedBoxes) {
-            if (box.contains(blockX, blockZ)) {
+            if (box.intersects(chunkMinX, chunkMinZ, chunkMaxX, chunkMaxZ)) {
                 return true;
             }
         }
