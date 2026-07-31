@@ -25,8 +25,6 @@ public class HypixelManager implements ClientModInitializer {
     public void onInitializeClient() {
         AddonConfig.load();
 
-        registerClientCommandReflectively();
-
         // Register for Hypixel API location updates
         it.unimi.dsi.fastutil.objects.Object2IntMap<net.minecraft.network.protocol.common.custom.CustomPacketPayload.Type<net.azureaaron.hmapi.network.packet.s2c.HypixelS2CPacket>> events = new it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap<>();
         events.put(LocationUpdateS2CPacket.ID, 1);
@@ -75,73 +73,6 @@ public class HypixelManager implements ClientModInitializer {
                 });
             }
         });
-    }
-
-    @SuppressWarnings("unchecked")
-    private static void registerClientCommandReflectively() {
-        try {
-            Class<?> callbackClass = Class.forName("net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback");
-            Class<?> managerClass = Class.forName("net.fabricmc.fabric.api.client.command.v2.ClientCommandManager");
-            Class<?> sourceClass = Class.forName("net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource");
-
-            java.lang.reflect.Method literalMethod = managerClass.getMethod("literal", String.class);
-            java.lang.reflect.Method argumentMethod = managerClass.getMethod("argument", String.class, com.mojang.brigadier.arguments.ArgumentType.class);
-
-            java.lang.reflect.Field eventField = callbackClass.getField("EVENT");
-            Object event = eventField.get(null);
-            java.lang.reflect.Method registerMethod = event.getClass().getMethod("register", callbackClass);
-
-            Object callbackProxy = java.lang.reflect.Proxy.newProxyInstance(
-                callbackClass.getClassLoader(),
-                new Class<?>[]{callbackClass},
-                (proxy, method, args) -> {
-                    if (method.getName().equals("register")) {
-                        com.mojang.brigadier.CommandDispatcher<Object> dispatcher = (com.mojang.brigadier.CommandDispatcher<Object>) args[0];
-                        
-                        var voxyaddon = (com.mojang.brigadier.builder.LiteralArgumentBuilder<Object>) literalMethod.invoke(null, "voxyaddon");
-                        var fastreloads = (com.mojang.brigadier.builder.LiteralArgumentBuilder<Object>) literalMethod.invoke(null, "fastreloads");
-                        var enabledArg = (com.mojang.brigadier.builder.RequiredArgumentBuilder<Object, Boolean>) argumentMethod.invoke(
-                            null, "enabled", com.mojang.brigadier.arguments.BoolArgumentType.bool()
-                        );
-
-                        enabledArg.executes(context -> {
-                            boolean enabled = com.mojang.brigadier.arguments.BoolArgumentType.getBool(context, "enabled");
-                            AddonConfig.setFastReloads(enabled);
-                            
-                            Object source = context.getSource();
-                            try {
-                                java.lang.reflect.Method sendFeedbackMethod = sourceClass.getMethod("sendFeedback", net.minecraft.network.chat.Component.class);
-                                sendFeedbackMethod.invoke(source, Component.literal("Voxy fast reloads set to: " + enabled));
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                            return 1;
-                        });
-
-                        fastreloads.executes(context -> {
-                            Object source = context.getSource();
-                            try {
-                                java.lang.reflect.Method sendFeedbackMethod = sourceClass.getMethod("sendFeedback", net.minecraft.network.chat.Component.class);
-                                sendFeedbackMethod.invoke(source, Component.literal("Voxy fast reloads is currently: " + AddonConfig.isFastReloads()));
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                            return 1;
-                        });
-
-                        fastreloads.then(enabledArg);
-                        voxyaddon.then(fastreloads);
-
-                        dispatcher.register(voxyaddon);
-                    }
-                    return null;
-                }
-            );
-
-            registerMethod.invoke(event, callbackProxy);
-        } catch (Throwable t) {
-            t.printStackTrace();
-        }
     }
 
     private static void scheduleReload(String gamemode, String area) {

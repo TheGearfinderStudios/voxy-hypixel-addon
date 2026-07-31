@@ -13,6 +13,9 @@ public class AddonConfig {
     public static class ConfigData {
         public boolean fastReloads = true;
         public boolean skipFakeReloads = true;
+        // If enabled: Hypixel Alpha uses the same Voxy cache as the main server (saves disk space).
+        // If disabled: Hypixel Alpha gets a dedicated cache folder (prevents cache bleed if Alpha has unreleased terrain changes).
+        public boolean mergeAlphaHypixel = true;
     }
 
     private static ConfigData data = new ConfigData();
@@ -60,6 +63,15 @@ public class AddonConfig {
 
     public static void setSkipFakeReloads(boolean value) {
         data.skipFakeReloads = value;
+        save();
+    }
+
+    public static boolean isMergeAlphaHypixel() {
+        return data.mergeAlphaHypixel;
+    }
+
+    public static void setMergeAlphaHypixel(boolean value) {
+        data.mergeAlphaHypixel = value;
         save();
     }
 }

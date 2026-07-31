@@ -63,15 +63,31 @@ public class MixinVoxyConfigMenu {
                 skipFakeReloadsOption = setTooltipSupplierMethod.invoke(skipFakeReloadsOption, skipFakeReloadsTooltip);
                 skipFakeReloadsOption = setEnablerMethod.invoke(skipFakeReloadsOption, "voxy:enabled");
 
+                // Option 3: Merge Alpha Hypixel cache
+                java.util.function.Supplier<Boolean> mergeAlphaGetter = () -> AddonConfig.isMergeAlphaHypixel();
+                java.util.function.Consumer<Boolean> mergeAlphaSetter = v -> AddonConfig.setMergeAlphaHypixel(v);
+                Object mergeAlphaOption = boolOptCons.newInstance(
+                    "voxyaddon:merge_alpha_hypixel",
+                    Component.literal("Addon: Merge Alpha Hypixel Cache"),
+                    mergeAlphaGetter,
+                    mergeAlphaSetter
+                );
+                java.util.function.Function<Object, Component> mergeAlphaTooltip = op -> Component.literal(
+                    "If enabled: Hypixel Alpha uses the same Voxy cache as the main Hypixel server to save disk space. Will cause conflicts between main and Alpha hub, and any other maps that are different in current Alpha. (Will only take effect after reconnecting!)"
+                );
+                mergeAlphaOption = setTooltipSupplierMethod.invoke(mergeAlphaOption, mergeAlphaTooltip);
+                mergeAlphaOption = setEnablerMethod.invoke(mergeAlphaOption, "voxy:enabled");
+
                 Class<?> groupClass = Class.forName("me.cortex.voxy.client.config.SodiumConfigBuilder$Group");
                 Class<?> optionClass = Class.forName("me.cortex.voxy.client.config.SodiumConfigBuilder$Option");
                 java.lang.reflect.Constructor<?> groupCons = groupClass.getConstructor(
                     java.lang.reflect.Array.newInstance(optionClass, 0).getClass()
                 );
 
-                Object optionsArray = java.lang.reflect.Array.newInstance(optionClass, 2);
+                Object optionsArray = java.lang.reflect.Array.newInstance(optionClass, 3);
                 java.lang.reflect.Array.set(optionsArray, 0, fastReloadsOption);
                 java.lang.reflect.Array.set(optionsArray, 1, skipFakeReloadsOption);
+                java.lang.reflect.Array.set(optionsArray, 2, mergeAlphaOption);
 
                 SodiumConfigBuilder.Group addonGroup = (SodiumConfigBuilder.Group) groupCons.newInstance(optionsArray);
 
