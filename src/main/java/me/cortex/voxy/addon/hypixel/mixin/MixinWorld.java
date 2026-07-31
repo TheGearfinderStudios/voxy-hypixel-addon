@@ -32,7 +32,24 @@ public abstract class MixinWorld {
             if (base == null) return null;
             
             // Create a new identifier instance for the specific Hypixel area
-            WorldIdentifier newId = new WorldIdentifier(base.key, base.biomeSeed, base.dimension);
+            net.minecraft.resources.ResourceKey<Level> targetKey = base.key;
+            net.minecraft.resources.ResourceKey<net.minecraft.world.level.dimension.DimensionType> targetDim = base.dimension;
+            
+            String targetDimOverride = me.cortex.voxy.addon.hypixel.AddonConfig.getTargetDimension(HypixelManager.getRawAreaId());
+            if (targetDimOverride != null) {
+                if ("OVERWORLD".equalsIgnoreCase(targetDimOverride)) {
+                    targetKey = Level.OVERWORLD;
+                    targetDim = net.minecraft.world.level.dimension.BuiltinDimensionTypes.OVERWORLD;
+                } else if ("NETHER".equalsIgnoreCase(targetDimOverride)) {
+                    targetKey = Level.NETHER;
+                    targetDim = net.minecraft.world.level.dimension.BuiltinDimensionTypes.NETHER;
+                } else if ("END".equalsIgnoreCase(targetDimOverride)) {
+                    targetKey = Level.END;
+                    targetDim = net.minecraft.world.level.dimension.BuiltinDimensionTypes.END;
+                }
+            }
+            
+            WorldIdentifier newId = new WorldIdentifier(targetKey, base.biomeSeed, targetDim);
             ((IPerAreaWorldIdentifier)newId).setSubId(areaId);
             
             voxy_hypixel_addon$lastArea = areaId;

@@ -13,7 +13,8 @@
     "MixinVoxyClientInstance",
     "MixinVoxyRenderSystem",
     "MixinVoxyConfigMenu",
-    "MixinPipelineManager"
+    "MixinPipelineManager",
+    "MixinVoxelIngestService"
   ],
   "injectors": {
     "defaultRequire": 1

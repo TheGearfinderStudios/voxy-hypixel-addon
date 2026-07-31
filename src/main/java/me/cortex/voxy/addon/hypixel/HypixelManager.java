@@ -19,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 public class HypixelManager implements ClientModInitializer {
     private static boolean isHypixel = false;
     private static String activeGamemodeArea = null;
+    private static String rawActiveArea = null;
     private static final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private static ScheduledFuture<?> pendingReload = null;
 
@@ -40,6 +41,7 @@ public class HypixelManager implements ClientModInitializer {
             client.execute(() -> {
                 isHypixel = false;
                 activeGamemodeArea = null;
+                rawActiveArea = null;
                 cancelPendingReload();
             });
         });
@@ -68,24 +70,32 @@ public class HypixelManager implements ClientModInitializer {
                         }
                     }
 
+                    String rawArea = normalized;
+                    if (normalized != null) {
+                        normalized = AddonConfig.getCanonicalAreaId(normalized);
+                    }
+
                     if (!Objects.equals(activeGamemodeArea, normalized)) {
                         activeGamemodeArea = normalized;
-                        scheduleReload(serverType, normalized);
+                        rawActiveArea = rawArea;
+                        scheduleReload(serverType, rawArea, normalized);
+                    } else {
+                        rawActiveArea = rawArea;
                     }
                 });
             }
         });
     }
 
-    private static void scheduleReload(String gamemode, String area) {
+    private static void scheduleReload(String gamemode, String rawArea, String canonicalArea) {
         cancelPendingReload();
         
         // Condition 2: The Debounce (200ms)
         // This prevents "triple reloads" when Hypixel spams packets during island jumps.
         pendingReload = scheduler.schedule(() -> {
             Minecraft.getInstance().execute(() -> {
-                Logger.info(String.format("[Voxy-Addon] Rebooting renderer for new area -> Type: %s | Folder: %s", 
-                    gamemode, area));
+                Logger.info(String.format("[Voxy-Addon] Rebooting renderer for new area -> Type: %s | Area: %s | Folder: %s", 
+                    gamemode, rawArea, canonicalArea));
                 
                 long startTime = System.currentTimeMillis();
                 var lr = Minecraft.getInstance().levelRenderer;
@@ -121,10 +131,12 @@ public class HypixelManager implements ClientModInitializer {
             isHypixel = ip.contains("hypixel.net");
             // Set to null on join to ensure gating until HM-API provides location
             activeGamemodeArea = null; 
+            rawActiveArea = null;
             //if (isHypixel) Logger.info("[Voxy-Addon] Hypixel Detected. Gating active.");
         } else {
             isHypixel = false;
             activeGamemodeArea = null;
+            rawActiveArea = null;
         }
     }
 
@@ -136,12 +148,17 @@ public class HypixelManager implements ClientModInitializer {
         return activeGamemodeArea;
     }
 
+    public static String getRawAreaId() {
+        return rawActiveArea;
+    }
+
     public static void beginLevelTransition() {
         if (!isHypixel) return;
 
         // A new ClientLevel arrives before HM API's location packet; null the area
         // so Voxy doesn't build an expensive renderer for the old island before scheduleReload() tears it down.
         activeGamemodeArea = null;
+        rawActiveArea = null;
         cancelPendingReload();
     }
 }
