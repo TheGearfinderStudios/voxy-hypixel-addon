@@ -49,7 +49,7 @@ def voxyJarFile = voxyJars.last()
 dependencies {
     // To change the versions see the gradle.properties file
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    //mappings loom.officialMojangMappings()
+    //mappings loom.officialMojangMappings() // DO NOT uncomment - removed permanently at MC 26.2 (ships with native Mojmap names, no intermediary layer exists)
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
     // Fabric API
