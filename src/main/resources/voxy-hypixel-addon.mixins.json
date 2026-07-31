@@ -6,6 +6,7 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "MixinWorld",
+    "MixinLevelExtractor",
     "MixinWorldIdentifier",
     "MixinLogger",
     "MixinVoxyRenderSystem",
