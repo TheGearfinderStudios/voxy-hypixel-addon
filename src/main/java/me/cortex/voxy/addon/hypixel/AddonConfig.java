@@ -44,11 +44,17 @@ public class AddonConfig {
         try {
             if (Files.exists(CONFIG_PATH)) {
                 try (var reader = Files.newBufferedReader(CONFIG_PATH)) {
-                    data = GSON.fromJson(reader, ConfigData.class);
-                    if (data == null) {
-                        data = new ConfigData();
+                    ConfigData loaded = GSON.fromJson(reader, ConfigData.class);
+                    if (loaded != null) {
+                        data.fastReloads = loaded.fastReloads;
+                        data.skipFakeReloads = loaded.skipFakeReloads;
+                        data.mergeAlphaHypixel = loaded.mergeAlphaHypixel;
+                        if (loaded.areaMappings != null) {
+                            data.areaMappings.putAll(loaded.areaMappings);
+                        }
                     }
                 }
+                save();
             } else {
                 save();
             }
