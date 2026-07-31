@@ -65,8 +65,11 @@ public class AddonConfig {
         public java.util.Map<String, AreaMapping> areaMappings = new java.util.HashMap<>();
 
         public ConfigData() {
-            // SkyBlock Hub: Group all maps with the same buildings and coord space
-            areaMappings.put("SKYBLOCK_foraging_1", new AreaMapping("SKYBLOCK_hub")); // park
+            // Park Hub clone lacks some structures, restrict writes to the Park islands and Jungle area to avoid overlapping End
+            java.util.List<BoundingBox> parkBoxes = new java.util.ArrayList<>();
+            parkBoxes.add(new BoundingBox(-470, -25, -255, 100)); // Park main body
+            parkBoxes.add(new BoundingBox(-500, -130, -400, -15)); // Jungle area
+            areaMappings.put("SKYBLOCK_foraging_1", new AreaMapping("SKYBLOCK_hub", parkBoxes)); // park
             
             // Galatea Hub clone lacks Savanna, restrict cache writes to the Galatea island boundaries to protect Savanna cache
             java.util.List<BoundingBox> galateaBoxes = new java.util.ArrayList<>();
