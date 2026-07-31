@@ -16,9 +16,29 @@ public class AddonConfig {
         // If enabled: Hypixel Alpha uses the same Voxy cache as the main server (saves disk space).
         // If disabled: Hypixel Alpha gets a dedicated cache folder (prevents cache bleed if Alpha has unreleased terrain changes).
         public boolean mergeAlphaHypixel = true;
+        public java.util.Map<String, String> areaMappings = new java.util.HashMap<>();
+
+        public ConfigData() {
+            // SkyBlock Hub: Group all maps with the same buildings and coord space
+            areaMappings.put("SKYBLOCK_foraging_1", "SKYBLOCK_hub"); // park
+            areaMappings.put("SKYBLOCK_foraging_2", "SKYBLOCK_hub"); // galatea
+            areaMappings.put("SKYBLOCK_combat_1", "SKYBLOCK_hub"); // spider
+            areaMappings.put("SKYBLOCK_combat_3", "SKYBLOCK_hub"); // end
+            areaMappings.put("SKYBLOCK_crimson_isle", "SKYBLOCK_hub"); // crimson
+            areaMappings.put("SKYBLOCK_mining_1", "SKYBLOCK_hub"); // gold mine
+            areaMappings.put("SKYBLOCK_farming_1", "SKYBLOCK_hub"); // barn
+            
+            //areaMappings.put("SKYBLOCK_mining_2", "SKYBLOCK_hub"); // CAN'T MERGE, Hypixel made it not fit the main hub
+        }
     }
 
     private static ConfigData data = new ConfigData();
+
+    public static String getCanonicalAreaId(String areaId) {
+        if (areaId == null) return null;
+        String mapped = data.areaMappings.get(areaId);
+        return (mapped != null && !mapped.isEmpty()) ? mapped : areaId;
+    }
 
     public static void load() {
         try {

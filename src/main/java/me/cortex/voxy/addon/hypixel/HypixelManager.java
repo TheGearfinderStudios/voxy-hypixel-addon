@@ -68,24 +68,29 @@ public class HypixelManager implements ClientModInitializer {
                         }
                     }
 
+                    String rawArea = normalized;
+                    if (normalized != null) {
+                        normalized = AddonConfig.getCanonicalAreaId(normalized);
+                    }
+
                     if (!Objects.equals(activeGamemodeArea, normalized)) {
                         activeGamemodeArea = normalized;
-                        scheduleReload(serverType, normalized);
+                        scheduleReload(serverType, rawArea, normalized);
                     }
                 });
             }
         });
     }
 
-    private static void scheduleReload(String gamemode, String area) {
+    private static void scheduleReload(String gamemode, String rawArea, String canonicalArea) {
         cancelPendingReload();
         
         // Condition 2: The Debounce (200ms)
         // This prevents "triple reloads" when Hypixel spams packets during island jumps.
         pendingReload = scheduler.schedule(() -> {
             Minecraft.getInstance().execute(() -> {
-                Logger.info(String.format("[Voxy-Addon] Rebooting renderer for new area -> Type: %s | Folder: %s", 
-                    gamemode, area));
+                Logger.info(String.format("[Voxy-Addon] Rebooting renderer for new area -> Type: %s | Area: %s | Folder: %s", 
+                    gamemode, rawArea, canonicalArea));
                 
                 long startTime = System.currentTimeMillis();
                 var lr = Minecraft.getInstance().levelRenderer;
