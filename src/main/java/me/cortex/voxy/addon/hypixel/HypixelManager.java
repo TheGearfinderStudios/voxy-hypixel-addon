@@ -2,6 +2,7 @@ package me.cortex.voxy.addon.hypixel;
 
 import net.azureaaron.hmapi.events.HypixelPacketEvents;
 import net.azureaaron.hmapi.network.packet.v1.s2c.LocationUpdateS2CPacket;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.client.Minecraft;
@@ -24,6 +25,7 @@ public class HypixelManager implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         AddonConfig.load();
+        ClientLifecycleEvents.CLIENT_STOPPING.register(client -> scheduler.shutdownNow());
 
         // Register for Hypixel API location updates
         it.unimi.dsi.fastutil.objects.Object2IntMap<net.minecraft.network.protocol.common.custom.CustomPacketPayload.Type<net.azureaaron.hmapi.network.packet.s2c.HypixelS2CPacket>> events = new it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap<>();
