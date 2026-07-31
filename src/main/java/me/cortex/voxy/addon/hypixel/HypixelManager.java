@@ -19,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 public class HypixelManager implements ClientModInitializer {
     private static boolean isHypixel = false;
     private static String activeGamemodeArea = null;
+    private static String rawActiveArea = null;
     private static final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private static ScheduledFuture<?> pendingReload = null;
 
@@ -40,6 +41,7 @@ public class HypixelManager implements ClientModInitializer {
             client.execute(() -> {
                 isHypixel = false;
                 activeGamemodeArea = null;
+                rawActiveArea = null;
                 cancelPendingReload();
             });
         });
@@ -75,7 +77,10 @@ public class HypixelManager implements ClientModInitializer {
 
                     if (!Objects.equals(activeGamemodeArea, normalized)) {
                         activeGamemodeArea = normalized;
+                        rawActiveArea = rawArea;
                         scheduleReload(serverType, rawArea, normalized);
+                    } else {
+                        rawActiveArea = rawArea;
                     }
                 });
             }
@@ -126,10 +131,12 @@ public class HypixelManager implements ClientModInitializer {
             isHypixel = ip.contains("hypixel.net");
             // Set to null on join to ensure gating until HM-API provides location
             activeGamemodeArea = null; 
+            rawActiveArea = null;
             //if (isHypixel) Logger.info("[Voxy-Addon] Hypixel Detected. Gating active.");
         } else {
             isHypixel = false;
             activeGamemodeArea = null;
+            rawActiveArea = null;
         }
     }
 
@@ -141,12 +148,17 @@ public class HypixelManager implements ClientModInitializer {
         return activeGamemodeArea;
     }
 
+    public static String getRawAreaId() {
+        return rawActiveArea;
+    }
+
     public static void beginLevelTransition() {
         if (!isHypixel) return;
 
         // A new ClientLevel arrives before HM API's location packet; null the area
         // so Voxy doesn't build an expensive renderer for the old island before scheduleReload() tears it down.
         activeGamemodeArea = null;
+        rawActiveArea = null;
         cancelPendingReload();
     }
 }
