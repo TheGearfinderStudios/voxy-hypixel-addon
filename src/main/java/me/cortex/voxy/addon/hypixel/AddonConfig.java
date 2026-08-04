@@ -76,6 +76,8 @@ public class AddonConfig {
             galateaBoxes.add(new BoundingBox(-770, -110, -520, 110));
             areaMappings.put("SKYBLOCK_foraging_2", new AreaMapping("SKYBLOCK_hub", galateaBoxes)); // galatea
             
+            areaMappings.put("SKYBLOCK_foraging_3", new AreaMapping("SKYBLOCK_hub")); // torrhus
+            
             areaMappings.put("SKYBLOCK_combat_1", new AreaMapping("SKYBLOCK_hub")); // spider
             
             // End Hub clone lacks other parts of the hub, restrict cache writes to the End island boundaries
