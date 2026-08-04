@@ -1,15 +1,21 @@
 package me.cortex.voxy.addon.hypixel;
 
-import net.azureaaron.hmapi.events.HypixelPacketEvents;
-import net.azureaaron.hmapi.network.packet.v1.s2c.LocationUpdateS2CPacket;
+import me.cortex.voxy.addon.hypixel.network.HypixelPayloads.HelloS2CPacket;
+import me.cortex.voxy.addon.hypixel.network.HypixelPayloads.LocationUpdateS2CPacket;
+import me.cortex.voxy.addon.hypixel.network.HypixelPayloads.RegisterC2SPacket;
+import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
 import me.cortex.voxy.common.Logger;
 import me.cortex.voxy.client.core.IVoxyRenderSystemHolder;
-import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -28,10 +34,56 @@ public class HypixelManager implements ClientModInitializer {
         AddonConfig.load();
         ClientLifecycleEvents.CLIENT_STOPPING.register(client -> scheduler.shutdownNow());
 
-        // Register for Hypixel API location updates
-        it.unimi.dsi.fastutil.objects.Object2IntMap<net.minecraft.network.protocol.common.custom.CustomPacketPayload.Type<net.azureaaron.hmapi.network.packet.s2c.HypixelS2CPacket>> events = new it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap<>();
-        events.put(LocationUpdateS2CPacket.ID, 1);
-        net.azureaaron.hmapi.network.HypixelNetworking.registerToEvents(events);
+        // Register custom payload codecs with Fabric API
+        PayloadTypeRegistry.clientboundPlay().register(HelloS2CPacket.ID, HelloS2CPacket.PACKET_CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(LocationUpdateS2CPacket.ID, LocationUpdateS2CPacket.PACKET_CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(RegisterC2SPacket.ID, RegisterC2SPacket.PACKET_CODEC);
+
+        // Register networking receivers
+        ClientPlayNetworking.registerGlobalReceiver(HelloS2CPacket.ID, (payload, context) -> {
+            if (!payload.success()) return;
+            // Received hypixel:hello handshake packet - subscribe to location events
+            Map<Identifier, Integer> events = new HashMap<>();
+            events.put(LocationUpdateS2CPacket.ID.id(), 1);
+            context.responseSender().sendPacket(new RegisterC2SPacket(1, events));
+        });
+
+        ClientPlayNetworking.registerGlobalReceiver(LocationUpdateS2CPacket.ID, (payload, context) -> {
+            context.client().execute(() -> {
+                if (!isHypixel || !payload.success()) return;
+
+                String serverType = payload.serverType().orElse("");
+                String mode = payload.mode().orElse("");
+                String map = payload.map().orElse("");
+
+                String normalized = null;
+
+                // Only process if we have a valid serverType foundation
+                if (!serverType.isEmpty()) {
+                    normalized = serverType; // Base (e.g., "SKYBLOCK" or "MAIN")
+                    
+                    // Append the most specific sub-location
+                    if (!mode.isEmpty()) {
+                        normalized += "_" + mode; // -> "SKYBLOCK_foraging_2"
+                    } else if (!map.isEmpty()) {
+                        normalized += "_" + map;  // -> "HOUSING_Base"
+                    }
+                }
+
+                String rawArea = normalized;
+                if (normalized != null) {
+                    normalized = AddonConfig.getCanonicalAreaId(normalized);
+                }
+
+                if (!Objects.equals(activeGamemodeArea, normalized)) {
+                    activeGamemodeArea = normalized;
+                    rawActiveArea = rawArea;
+                    scheduleReload(serverType, rawArea, normalized);
+                } else {
+                    rawActiveArea = rawArea;
+                }
+            });
+        });
 
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
             client.execute(() -> onJoin(client));
@@ -44,46 +96,6 @@ public class HypixelManager implements ClientModInitializer {
                 rawActiveArea = null;
                 cancelPendingReload();
             });
-        });
-
-        // HM API listeners
-        HypixelPacketEvents.LOCATION_UPDATE.register(packet -> {
-            if (packet instanceof LocationUpdateS2CPacket location) {
-                Minecraft.getInstance().execute(() -> {
-                    if (!isHypixel) return;
-
-                    String serverType = location.serverType().orElse("");
-                    String mode = location.mode().orElse("");
-                    String map = location.map().orElse("");
-
-                    String normalized = null;
-
-                    // Only process if we have a valid serverType foundation
-                    if (!serverType.isEmpty()) {
-                        normalized = serverType; // Base (e.g., "SKYBLOCK" or "MAIN")
-                        
-                        // Append the most specific sub-location
-                        if (!mode.isEmpty()) {
-                            normalized += "_" + mode; // -> "SKYBLOCK_foraging_2"
-                        } else if (!map.isEmpty()) {
-                            normalized += "_" + map;  // -> "HOUSING_Base"
-                        }
-                    }
-
-                    String rawArea = normalized;
-                    if (normalized != null) {
-                        normalized = AddonConfig.getCanonicalAreaId(normalized);
-                    }
-
-                    if (!Objects.equals(activeGamemodeArea, normalized)) {
-                        activeGamemodeArea = normalized;
-                        rawActiveArea = rawArea;
-                        scheduleReload(serverType, rawArea, normalized);
-                    } else {
-                        rawActiveArea = rawArea;
-                    }
-                });
-            }
         });
     }
 

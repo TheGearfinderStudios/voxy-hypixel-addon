@@ -8,7 +8,10 @@ import java.nio.file.Path;
 
 public class AddonConfig {
     private static final Path CONFIG_PATH = FabricLoader.getInstance().getConfigDir().resolve("voxy-hypixel-addon.json");
-    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    private static final Gson GSON = new GsonBuilder()
+            .registerTypeAdapter(AreaMapping.class, new AreaMappingDeserializer())
+            .setPrettyPrinting()
+            .create();
 
     public static class BoundingBox {
         public int minX;
@@ -52,6 +55,29 @@ public class AddonConfig {
         public AreaMapping(String targetArea, String targetDimension) {
             this.targetArea = targetArea;
             this.targetDimension = targetDimension;
+        }
+    }
+
+    public static class AreaMappingDeserializer implements com.google.gson.JsonDeserializer<AreaMapping> {
+        @Override
+        public AreaMapping deserialize(com.google.gson.JsonElement json, java.lang.reflect.Type typeOfT, com.google.gson.JsonDeserializationContext context) throws com.google.gson.JsonParseException {
+            if (json.isJsonPrimitive() && json.getAsJsonPrimitive().isString()) {
+                return new AreaMapping(json.getAsString());
+            } else if (json.isJsonObject()) {
+                AreaMapping mapping = new AreaMapping();
+                com.google.gson.JsonObject obj = json.getAsJsonObject();
+                if (obj.has("targetArea") && !obj.get("targetArea").isJsonNull()) {
+                    mapping.targetArea = obj.get("targetArea").getAsString();
+                }
+                if (obj.has("targetDimension") && !obj.get("targetDimension").isJsonNull()) {
+                    mapping.targetDimension = obj.get("targetDimension").getAsString();
+                }
+                if (obj.has("allowedBoxes") && obj.get("allowedBoxes").isJsonArray()) {
+                    mapping.allowedBoxes = context.deserialize(obj.get("allowedBoxes"), new com.google.gson.reflect.TypeToken<java.util.List<BoundingBox>>(){}.getType());
+                }
+                return mapping;
+            }
+            return new AreaMapping();
         }
     }
 
