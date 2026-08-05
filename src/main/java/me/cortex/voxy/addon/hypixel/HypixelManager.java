@@ -7,6 +7,7 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
@@ -24,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 public class HypixelManager implements ClientModInitializer {
     private static boolean isHypixel = false;
+    private static boolean weOwnC2SRegistration = false;
     private static String activeGamemodeArea = null;
     private static String rawActiveArea = null;
     private static final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
@@ -34,23 +36,30 @@ public class HypixelManager implements ClientModInitializer {
         AddonConfig.load();
         ClientLifecycleEvents.CLIENT_STOPPING.register(client -> scheduler.shutdownNow());
 
-        // Register custom payload codecs with Fabric API
-        PayloadTypeRegistry.clientboundPlay().register(HelloS2CPacket.ID, HelloS2CPacket.PACKET_CODEC);
-        PayloadTypeRegistry.clientboundPlay().register(LocationUpdateS2CPacket.ID, LocationUpdateS2CPacket.PACKET_CODEC);
-        PayloadTypeRegistry.serverboundPlay().register(RegisterC2SPacket.ID, RegisterC2SPacket.PACKET_CODEC);
+        // Register custom payload codecs with Fabric API (safely ignoring duplicates if another mod registered them first)
+        try {
+            PayloadTypeRegistry.clientboundPlay().register(HelloS2CPacket.ID, HelloS2CPacket.PACKET_CODEC);
+        } catch (IllegalArgumentException ignored) {}
+        try {
+            PayloadTypeRegistry.clientboundPlay().register(LocationUpdateS2CPacket.ID, LocationUpdateS2CPacket.PACKET_CODEC);
+        } catch (IllegalArgumentException ignored) {}
+        try {
+            PayloadTypeRegistry.serverboundPlay().register(RegisterC2SPacket.ID, RegisterC2SPacket.PACKET_CODEC);
+            weOwnC2SRegistration = true;
+        } catch (IllegalArgumentException ignored) {} // another mod owns this (e.g. official Hypixel Mod API) — they handle the handshake
 
         // Register networking receivers
         ClientPlayNetworking.registerGlobalReceiver(HelloS2CPacket.ID, (payload, context) -> {
             if (!payload.success()) return;
-            // Received hypixel:hello handshake packet - subscribe to location events
-            Map<Identifier, Integer> events = new HashMap<>();
-            events.put(LocationUpdateS2CPacket.ID.id(), 1);
-            context.responseSender().sendPacket(new RegisterC2SPacket(1, events));
+            isHypixel = true;
+            Logger.info("[Voxy-Addon] Hypixel Hello received. Subscribing to location updates...");
+            sendLocationRegistration(context.responseSender());
         });
 
         ClientPlayNetworking.registerGlobalReceiver(LocationUpdateS2CPacket.ID, (payload, context) -> {
             context.client().execute(() -> {
-                if (!isHypixel || !payload.success()) return;
+                isHypixel = true;
+                if (!payload.success()) return;
 
                 String serverType = payload.serverType().orElse("");
                 String mode = payload.mode().orElse("");
@@ -75,6 +84,9 @@ public class HypixelManager implements ClientModInitializer {
                     normalized = AddonConfig.getCanonicalAreaId(normalized);
                 }
 
+                Logger.info(String.format("[Voxy-Addon] Location packet received -> Type: %s | Mode: %s | Map: %s | Normalized: %s", 
+                    serverType, mode, map, normalized));
+
                 if (!Objects.equals(activeGamemodeArea, normalized)) {
                     activeGamemodeArea = normalized;
                     rawActiveArea = rawArea;
@@ -86,7 +98,12 @@ public class HypixelManager implements ClientModInitializer {
         });
 
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
-            client.execute(() -> onJoin(client));
+            client.execute(() -> {
+                onJoin(client);
+                if (isHypixel) {
+                    sendLocationRegistration(sender);
+                }
+            });
         });
 
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
@@ -97,6 +114,17 @@ public class HypixelManager implements ClientModInitializer {
                 cancelPendingReload();
             });
         });
+    }
+
+    private static void sendLocationRegistration(PacketSender sender) {
+        if (!weOwnC2SRegistration) return; // another mod owns hypixel:register, location packets arrive without us sending it
+        try {
+            Map<Identifier, Integer> events = new HashMap<>();
+            events.put(LocationUpdateS2CPacket.ID.id(), 1);
+            sender.sendPacket(new RegisterC2SPacket(1, events));
+        } catch (Throwable t) {
+            Logger.error("[Voxy-Addon] Failed to send location registration packet", t);
+        }
     }
 
     private static void scheduleReload(String gamemode, String rawArea, String canonicalArea) {
@@ -138,18 +166,11 @@ public class HypixelManager implements ClientModInitializer {
 
     private static void onJoin(Minecraft client) {
         ServerData serverData = client.getCurrentServer();
-        if (serverData != null && serverData.ip != null) {
-            String ip = serverData.ip.toLowerCase();
-            isHypixel = ip.contains("hypixel.net");
-            // Set to null on join to ensure gating until HM-API provides location
-            activeGamemodeArea = null; 
-            rawActiveArea = null;
-            //if (isHypixel) Logger.info("[Voxy-Addon] Hypixel Detected. Gating active.");
-        } else {
-            isHypixel = false;
-            activeGamemodeArea = null;
-            rawActiveArea = null;
-        }
+        String ip = (serverData != null && serverData.ip != null) ? serverData.ip.toLowerCase() : "";
+        String brand = (client.player != null && client.player.connection != null && client.player.connection.serverBrand() != null) ? client.player.connection.serverBrand() : "";
+        isHypixel = ip.contains("hypixel.net") || ip.contains("hypixel.io") || brand.contains("Hypixel");
+        activeGamemodeArea = null; 
+        rawActiveArea = null;
     }
 
     public static boolean isHypixel() {
