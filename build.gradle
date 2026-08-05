@@ -11,34 +11,7 @@ defaultTasks 'build'
 def TARGET_VOXY_VERSION = "0.2.18"
 def voxyVersionSuffix = TARGET_VOXY_VERSION.substring(TARGET_VOXY_VERSION.lastIndexOf('.') + 1)
 
-// Define target Minecraft versions here. 
-// If multiple versions are specified, any non-identical characters across the strings will be replaced by 'x'
-def TARGET_MINECRAFT_VERSIONS = ["26.1.2", "26.2"]
-
-def determineTargetMcVersion(List<String> versions) {
-    if (!versions) return project.minecraft_version
-    if (versions.size() == 1) return versions[0]
-    
-    // Find min length
-    int minLen = versions.collect { it.length() }.min()
-    StringBuilder result = new StringBuilder()
-    
-    for (int i = 0; i < minLen; i++) {
-        char ch = versions[0].charAt(i)
-        boolean match = versions.every { it.charAt(i) == ch }
-        result.append(match ? ch : 'x')
-    }
-    
-    // Trim trailing dot or non-alphanumeric if it ended on a mismatch transition (e.g. "26.x")
-    String ver = result.toString()
-    if (ver.endsWith(".")) {
-        ver = ver.substring(0, ver.length() - 1)
-    }
-    return ver
-}
-
-def mcVersion = determineTargetMcVersion(TARGET_MINECRAFT_VERSIONS)
-version = "${project.mod_version}+mc${mcVersion}-voxy${voxyVersionSuffix}"
+version = "${project.mod_version}+mc${project.minecraft_version}-voxy${voxyVersionSuffix}"
 group = project.maven_group
 
 base {
