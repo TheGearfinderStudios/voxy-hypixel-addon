@@ -5,6 +5,7 @@
   "refmap": "voxy-hypixel-addon-refmap.json",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "MixinClientboundCustomPayloadPacket",
     "MixinWorld",
     "MixinLevelExtractor",
     "MixinLevelRenderer",
