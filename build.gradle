@@ -13,7 +13,7 @@ def voxyVersionSuffix = TARGET_VOXY_VERSION.substring(TARGET_VOXY_VERSION.lastIn
 
 // Define target Minecraft versions here. 
 // If multiple versions are specified, any non-identical characters across the strings will be replaced by 'x'
-def TARGET_MINECRAFT_VERSIONS = ["26.1.2", "26.2"]
+def TARGET_MINECRAFT_VERSIONS = ["26.1.2"]
 
 def determineTargetMcVersion(List<String> versions) {
     if (!versions) return project.minecraft_version
