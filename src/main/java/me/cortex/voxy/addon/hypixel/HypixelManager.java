@@ -141,19 +141,28 @@ public class HypixelManager implements ClientModInitializer {
     }
 
     public static boolean isHypixel() {
-        return isHypixel;
+        if (isHypixel) return true;
+        return FlashbackAddonCompat.isHypixelReplay();
     }
 
     public static String getAreaId() {
-        return activeGamemodeArea;
+        if (activeGamemodeArea != null) return activeGamemodeArea;
+        if (FlashbackAddonCompat.isHypixelReplay()) {
+            return FlashbackAddonCompat.getReplayHypixelArea();
+        }
+        return null;
     }
 
     public static String getRawAreaId() {
-        return rawActiveArea;
+        if (rawActiveArea != null) return rawActiveArea;
+        if (FlashbackAddonCompat.isHypixelReplay()) {
+            return FlashbackAddonCompat.getReplayHypixelRawArea();
+        }
+        return null;
     }
 
     public static void beginLevelTransition() {
-        if (!isHypixel) return;
+        if (!isHypixel()) return;
 
         // A new ClientLevel arrives before HM API's location packet; null the area
         // so Voxy doesn't build an expensive renderer for the old island before scheduleReload() tears it down.

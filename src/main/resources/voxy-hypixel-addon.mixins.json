@@ -13,7 +13,8 @@
     "MixinVoxyRenderSystem",
     "MixinVoxyConfigMenu",
     "MixinPipelineManager",
-    "MixinVoxelIngestService"
+    "MixinVoxelIngestService",
+    "MixinFlashbackMeta"
   ],
   "injectors": {
     "defaultRequire": 1

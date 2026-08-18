@@ -52,6 +52,10 @@ public abstract class MixinWorld {
             WorldIdentifier newId = new WorldIdentifier(targetKey, base.biomeSeed, targetDim);
             ((IPerAreaWorldIdentifier)newId).setSubId(areaId);
             
+            if (me.cortex.voxy.addon.hypixel.FlashbackAddonCompat.isHypixelReplay()) {
+                me.cortex.voxy.common.Logger.info("[Voxy-Addon-Flashback] Resolved WorldIdentifier subId for Flashback replay -> subId: " + areaId);
+            }
+            
             voxy_hypixel_addon$lastArea = areaId;
             voxy_hypixel_addon$cachedAreaId = newId;
         }
