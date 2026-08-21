@@ -2,8 +2,8 @@
 	"schemaVersion": 1,
 	"id": "voxy-hypixel-addon",
 	"version": "${version}",
-	"name": "Voxy Hypixel Addon",
-	"description": "Standalone Voxy addon to achieve per-island world isolation on Hypixel Skyblock.",
+	"name": "Voxy & DH Hypixel Addon",
+	"description": "Per-island LOD world isolation on Hypixel. Install Voxy OR Distant Horizons — not both.",
 	"authors": [
 		"TBlazeWarriorT"
 	],
@@ -19,13 +19,18 @@
 		]
 	},
 	"mixins": [
-		"voxy-hypixel-addon.mixins.json"
+		"common-hypixel-addon.mixins.json",
+		"voxy-hypixel-addon.mixins.json",
+		"dh-hypixel-addon.mixins.json"
 	],
 	"depends": {
 		"fabricloader": ">=0.16.1",
 		"minecraft": ">=26.2",
 		"java": ">=25",
-		"fabric-api": "*",
-		"voxy": ">=0.2.18-beta"
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"voxy": ">=0.2.18-beta",
+		"distanthorizons": "*"
 	}
 }

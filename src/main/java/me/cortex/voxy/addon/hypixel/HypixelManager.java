@@ -2,14 +2,16 @@ package me.cortex.voxy.addon.hypixel;
 
 import net.azureaaron.hmapi.events.HypixelPacketEvents;
 import net.azureaaron.hmapi.network.packet.v1.s2c.LocationUpdateS2CPacket;
+import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
-import me.cortex.voxy.common.Logger;
-import me.cortex.voxy.client.core.IVoxyRenderSystemHolder;
 import net.minecraft.network.chat.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -17,6 +19,11 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public class HypixelManager implements ClientModInitializer {
+    private static final Logger LOGGER = LoggerFactory.getLogger("voxy-hypixel-addon");
+
+    private static final boolean VOXY_LOADED = FabricLoader.getInstance().isModLoaded("voxy");
+    private static final boolean DH_LOADED = FabricLoader.getInstance().isModLoaded("distanthorizons");
+
     private static boolean isHypixel = false;
     private static String activeGamemodeArea = null;
     private static String rawActiveArea = null;
@@ -43,10 +50,10 @@ public class HypixelManager implements ClientModInitializer {
                 activeGamemodeArea = null;
                 rawActiveArea = null;
                 cancelPendingReload();
+                DhBackend.onDisconnect();
             });
         });
 
-        // HM API listeners
         HypixelPacketEvents.LOCATION_UPDATE.register(packet -> {
             if (packet instanceof LocationUpdateS2CPacket location) {
                 Minecraft.getInstance().execute(() -> {
@@ -57,16 +64,12 @@ public class HypixelManager implements ClientModInitializer {
                     String map = location.map().orElse("");
 
                     String normalized = null;
-
-                    // Only process if we have a valid serverType foundation
                     if (!serverType.isEmpty()) {
-                        normalized = serverType; // Base (e.g., "SKYBLOCK" or "MAIN")
-                        
-                        // Append the most specific sub-location
+                        normalized = serverType;
                         if (!mode.isEmpty()) {
-                            normalized += "_" + mode; // -> "SKYBLOCK_foraging_2"
+                            normalized += "_" + mode;
                         } else if (!map.isEmpty()) {
-                            normalized += "_" + map;  // -> "HOUSING_Base"
+                            normalized += "_" + map;
                         }
                     }
 
@@ -89,30 +92,13 @@ public class HypixelManager implements ClientModInitializer {
 
     private static void scheduleReload(String gamemode, String rawArea, String canonicalArea) {
         cancelPendingReload();
-        
-        // Condition 2: The Debounce (200ms)
-        // This prevents "triple reloads" when Hypixel spams packets during island jumps.
         pendingReload = scheduler.schedule(() -> {
             Minecraft.getInstance().execute(() -> {
-                Logger.info(String.format("[Voxy-Addon] Rebooting renderer for new area -> Type: %s | Area: %s | Folder: %s", 
-                    gamemode, rawArea, canonicalArea));
-                
-                long startTime = System.currentTimeMillis();
-                var lr = Minecraft.getInstance().levelRenderer;
-                if (lr instanceof IVoxyRenderSystemHolder getter) {
-                    // Condition 1: "Is-Loading" Check / Safety
-                    // Voxy's shutdown/create sequence is heavy; executing it here 
-                    // ensures we are on the Render Thread and after the debounce.
-                    getter.voxy$shutdownRenderer();
-                    long shutdownTime = System.currentTimeMillis();
-                    
-                    getter.voxy$setWorld(Minecraft.getInstance().level);
-                    getter.voxy$createRenderer();
-                    long createTime = System.currentTimeMillis();
-                    
-                    Logger.info(String.format("[Voxy-Addon-Benchmark] Reload completed in %d ms (Shutdown: %d ms, Create: %d ms). Fast Reloads = %s", 
-                        (createTime - startTime), (shutdownTime - startTime), (createTime - shutdownTime), AddonConfig.isFastReloads()));
-                }
+                LOGGER.info("[Voxy-Addon] Area change -> Type: {} | Area: {} | Folder: {}", gamemode, rawArea, canonicalArea);
+
+                if (VOXY_LOADED) VoxyBackend.onAreaChange(gamemode, rawArea, canonicalArea);
+                if (DH_LOADED) DhBackend.onAreaChange(canonicalArea);
+
                 pendingReload = null;
             });
         }, 200, TimeUnit.MILLISECONDS);
@@ -129,10 +115,18 @@ public class HypixelManager implements ClientModInitializer {
         if (serverData != null && serverData.ip != null) {
             String ip = serverData.ip.toLowerCase();
             isHypixel = ip.contains("hypixel.net");
-            // Set to null on join to ensure gating until HM-API provides location
-            activeGamemodeArea = null; 
+            activeGamemodeArea = null;
             rawActiveArea = null;
-            //if (isHypixel) Logger.info("[Voxy-Addon] Hypixel Detected. Gating active.");
+
+            if (isHypixel && !VOXY_LOADED && !DH_LOADED) {
+                client.execute(() -> {
+                    if (client.player != null) {
+                        client.player.sendSystemMessage(Component.literal(
+                            "[Voxy & DH Hypixel Addon] Neither Voxy nor Distant Horizons is installed - this addon has no effect!"
+                        ).withStyle(s -> s.withColor(0xFF4444)));
+                    }
+                });
+            }
         } else {
             isHypixel = false;
             activeGamemodeArea = null;
@@ -163,9 +157,6 @@ public class HypixelManager implements ClientModInitializer {
 
     public static void beginLevelTransition() {
         if (!isHypixel()) return;
-
-        // A new ClientLevel arrives before HM API's location packet; null the area
-        // so Voxy doesn't build an expensive renderer for the old island before scheduleReload() tears it down.
         activeGamemodeArea = null;
         rawActiveArea = null;
         cancelPendingReload();

@@ -3,7 +3,8 @@ package me.cortex.voxy.addon.hypixel.mixin.flashback;
 import com.google.gson.JsonObject;
 import me.cortex.voxy.addon.hypixel.HypixelManager;
 import me.cortex.voxy.addon.hypixel.access.IFlashbackHypixelMeta;
-import me.cortex.voxy.common.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -12,6 +13,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(targets = "com.moulberry.flashback.record.FlashbackMeta", remap = false)
 public class MixinFlashbackMeta implements IFlashbackHypixelMeta {
+    private static final Logger LOGGER = LoggerFactory.getLogger("voxy-hypixel-addon/flashback");
+
     @Unique private String voxy_hypixel_addon$area;
     @Unique private String voxy_hypixel_addon$rawArea;
 
@@ -43,7 +46,7 @@ public class MixinFlashbackMeta implements IFlashbackHypixelMeta {
             String rawArea = this.voxy_hypixel_addon$rawArea != null ? this.voxy_hypixel_addon$rawArea : HypixelManager.getRawAreaId();
             if (area != null) {
                 val.addProperty("voxy_hypixel_area", area);
-                Logger.info("[Voxy-Addon-Flashback] Saved Hypixel area to Flashback meta.json -> Area: " + area);
+                LOGGER.info("[Voxy-Addon-Flashback] Saved Hypixel area to Flashback meta.json -> Area: {}", area);
             }
             if (rawArea != null) {
                 val.addProperty("voxy_hypixel_raw_area", rawArea);
@@ -58,7 +61,7 @@ public class MixinFlashbackMeta implements IFlashbackHypixelMeta {
             if (meta.has("voxy_hypixel_area")) {
                 String area = meta.get("voxy_hypixel_area").getAsString();
                 hypixelMeta.voxy_hypixel_addon$setHypixelArea(area);
-                Logger.info("[Voxy-Addon-Flashback] Loaded Hypixel area from meta.json -> Area: " + area);
+                LOGGER.info("[Voxy-Addon-Flashback] Loaded Hypixel area from meta.json -> Area: {}", area);
             }
             if (meta.has("voxy_hypixel_raw_area")) {
                 String rawArea = meta.get("voxy_hypixel_raw_area").getAsString();
@@ -67,4 +70,3 @@ public class MixinFlashbackMeta implements IFlashbackHypixelMeta {
         }
     }
 }
-

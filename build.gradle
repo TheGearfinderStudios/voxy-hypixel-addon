@@ -11,7 +11,19 @@ defaultTasks 'build'
 def TARGET_VOXY_VERSION = "0.2.18"
 def voxyVersionSuffix = TARGET_VOXY_VERSION.substring(TARGET_VOXY_VERSION.lastIndexOf('.') + 1)
 
-version = "${project.mod_version}+mc${project.minecraft_version}-voxy${voxyVersionSuffix}"
+// --- DH DEPENDENCY RESOLVER ---
+// Drop a distant-horizons-*.jar into /libs to enable DH compile support.
+// Build succeeds without it (DH is an optional backend).
+def dhJars = fileTree(dir: 'libs', include: "distant-horizons-*.jar").files.sort()
+def dhJarFile = dhJars.isEmpty() ? null : dhJars.last()
+if (dhJarFile != null) {
+    logger.lifecycle("DH: Found jar for compilation: ${dhJarFile.name}")
+} else {
+    logger.lifecycle("DH: No distant-horizons-*.jar in /libs - DH backend will compile without DH stubs (reflection-only).")
+}
+// --------------------------------
+
+version = "${project.mod_version}+mc${project.minecraft_version}"
 group = project.maven_group
 
 base {
@@ -60,6 +72,11 @@ dependencies {
 
     // Voxy - Local for compilation
     compileOnly files(voxyJarFile)
+
+    // DH - Optional local for compilation (reflection-only backend if absent)
+    if (dhJarFile != null) {
+        compileOnly files(dhJarFile)
+    }
 }
 
 processResources {

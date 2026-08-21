@@ -1,4 +1,4 @@
-﻿package me.cortex.voxy.addon.hypixel.mixin.vanilla;
+package me.cortex.voxy.addon.hypixel.mixin.vanilla;
 
 import me.cortex.voxy.addon.hypixel.HypixelManager;
 import net.minecraft.client.multiplayer.ClientLevel;

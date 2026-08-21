@@ -2,19 +2,18 @@
   "required": true,
   "minVersion": "0.8",
   "package": "me.cortex.voxy.addon.hypixel.mixin",
+  "plugin": "me.cortex.voxy.addon.hypixel.mixin.VoxyMixinPlugin",
   "refmap": "voxy-hypixel-addon-refmap.json",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "vanilla.MixinWorld",
-    "vanilla.MixinLevelExtractor",
     "voxy.MixinWorldIdentifier",
     "voxy.MixinLogger",
     "voxy.MixinVoxyClientInstance",
     "voxy.MixinVoxyRenderSystem",
     "voxy.MixinVoxyConfigMenu",
     "voxy.MixinVoxelIngestService",
-    "iris.MixinPipelineManager",
-    "flashback.MixinFlashbackMeta"
+    "iris.MixinPipelineManager"
   ],
   "injectors": {
     "defaultRequire": 1
