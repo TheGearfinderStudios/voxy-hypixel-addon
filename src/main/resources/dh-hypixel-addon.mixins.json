@@ -6,7 +6,8 @@
   "refmap": "voxy-hypixel-addon-refmap.json",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "dh.MixinDhSharedApi"
+    "dh.MixinDhSharedApi",
+    "dh.MixinDhOverrideInjector"
   ],
   "injectors": {
     "defaultRequire": 1

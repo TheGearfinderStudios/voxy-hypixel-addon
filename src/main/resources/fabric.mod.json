@@ -3,7 +3,7 @@
 	"id": "voxy-hypixel-addon",
 	"version": "${version}",
 	"name": "Voxy Hypixel Addon",
-	"description": "Per-island LOD world isolation on Hypixel. Install Voxy OR Distant Horizons — not both.",
+	"description": "Per-world LOD chunk isolation on Hypixel for Voxy OR Distant Horizons.",
 	"authors": [
 		"TBlazeWarriorT"
 	],
