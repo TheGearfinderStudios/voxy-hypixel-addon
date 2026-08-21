@@ -1,4 +1,4 @@
-package me.cortex.voxy.addon.hypixel.mixin;
+package me.cortex.voxy.addon.hypixel.mixin.voxy;
 
 import me.cortex.voxy.client.config.VoxyConfigMenu;
 import me.cortex.voxy.client.config.SodiumConfigBuilder;

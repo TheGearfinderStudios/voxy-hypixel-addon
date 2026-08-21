@@ -1,4 +1,4 @@
-package me.cortex.voxy.addon.hypixel.mixin;
+package me.cortex.voxy.addon.hypixel.mixin.voxy;
 
 import me.cortex.voxy.client.core.VoxyRenderSystem;
 import me.cortex.voxy.addon.hypixel.AddonConfig;

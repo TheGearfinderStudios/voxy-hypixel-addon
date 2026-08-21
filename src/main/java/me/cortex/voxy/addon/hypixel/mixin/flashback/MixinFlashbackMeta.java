@@ -1,4 +1,4 @@
-package me.cortex.voxy.addon.hypixel.mixin;
+package me.cortex.voxy.addon.hypixel.mixin.flashback;
 
 import com.google.gson.JsonObject;
 import me.cortex.voxy.addon.hypixel.HypixelManager;
@@ -67,3 +67,4 @@ public class MixinFlashbackMeta implements IFlashbackHypixelMeta {
         }
     }
 }
+

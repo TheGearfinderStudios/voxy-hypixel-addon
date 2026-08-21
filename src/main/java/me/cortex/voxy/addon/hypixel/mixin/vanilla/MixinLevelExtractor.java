@@ -1,4 +1,4 @@
-package me.cortex.voxy.addon.hypixel.mixin;
+﻿package me.cortex.voxy.addon.hypixel.mixin.vanilla;
 
 import me.cortex.voxy.addon.hypixel.HypixelManager;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 // This mixin silently skips on 26.1.x (targets= string form, so no crash, just no-op).
 //
 // BACKPORT TO 26.1.x: change targets= to "net.minecraft.client.renderer.LevelRenderer"
-// The method signature (setLevel(ClientLevel)V) is identical — that's the only change needed.
+// The method signature (setLevel(ClientLevel)V) is identical --- that's the only change needed.
 @Mixin(targets = "net.minecraft.client.renderer.extract.LevelExtractor", remap = false, priority = 2000)
 public class MixinLevelExtractor {
     // remap=false + explicit descriptor required: no refmap generated without mappings (MC 26.2 ships native Mojmap names)
@@ -21,3 +21,4 @@ public class MixinLevelExtractor {
         HypixelManager.beginLevelTransition();
     }
 }
+

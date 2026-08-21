@@ -1,4 +1,4 @@
-package me.cortex.voxy.addon.hypixel.mixin;
+package me.cortex.voxy.addon.hypixel.mixin.voxy;
 
 import me.cortex.voxy.addon.hypixel.access.IPerAreaWorldIdentifier;
 import me.cortex.voxy.commonImpl.WorldIdentifier;
