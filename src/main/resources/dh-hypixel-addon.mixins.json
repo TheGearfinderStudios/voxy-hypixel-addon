@@ -1,10 +1,13 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "me.cortex.voxy.addon.hypixel.mixin.dh",
+  "package": "me.cortex.voxy.addon.hypixel.mixin",
+  "plugin": "me.cortex.voxy.addon.hypixel.mixin.DhMixinPlugin",
   "refmap": "voxy-hypixel-addon-refmap.json",
   "compatibilityLevel": "JAVA_21",
-  "mixins": [],
+  "mixins": [
+    "dh.MixinDhSharedApi"
+  ],
   "injectors": {
     "defaultRequire": 1
   }

@@ -12,8 +12,7 @@
     "voxy.MixinVoxyClientInstance",
     "voxy.MixinVoxyRenderSystem",
     "voxy.MixinVoxyConfigMenu",
-    "voxy.MixinVoxelIngestService",
-    "iris.MixinPipelineManager"
+    "voxy.MixinVoxelIngestService"
   ],
   "injectors": {
     "defaultRequire": 1

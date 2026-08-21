@@ -6,6 +6,7 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "vanilla.MixinLevelExtractor",
+    "iris.MixinPipelineManager",
     "flashback.MixinFlashbackMeta"
   ],
   "injectors": {
